@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="bn" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EarnPulse Hub - Ad Monetization & Revenue Platform</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857',
+                            accent: '#6366f1',
+                            gold: '#f59e0b',
+                            rose: '#f43f5e'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Canvas Confetti -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Hind Siliguri', 'Plus Jakarta Sans', sans-serif; }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .ad-glow {
+            box-shadow: 0 0 20px -3px rgba(244, 63, 94, 0.25);
+        }
+        .money-glow {
+            box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.35);
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 9999px; }
+        
+        @keyframes pulse-border {
+            0%, 100% { border-color: rgba(244, 63, 94, 0.4); }
+            50% { border-color: rgba(244, 63, 94, 0.9); }
+        }
+        .pulse-ad { animation: pulse-border 2s infinite; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col custom-scrollbar selection:bg-brand-500 selection:text-white">
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="bg-slate-900/90 border-b border-slate-800/80 sticky top-0 z-40 px-4 py-3 backdrop-blur-md">
+        <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+            
+            <!-- Logo -->
+            <div onclick="switchView('user')" class="flex items-center gap-3 cursor-pointer group">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-rose-600 via-indigo-600 to-emerald-500 flex items-center justify-center shadow-lg shadow-rose-500/20 group-hover:scale-105 transition">
+                    <i class="fa-solid fa-rectangle-ad text-xl text-white"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold bg-gradient-to-r from-white via-slate-200 to-emerald-400 bg-clip-text text-transparent tracking-tight">EarnPulse Hub</span>
+                    <span class="text-[10px] uppercase font-bold tracking-widest bg-rose-500/20 text-rose-400 px-2 py-0.5 rounded ml-2 border border-rose-500/30">Ad Engine v2.4</span>
+                </div>
+            </div>
+
+            <!-- View Toggles (Admin Owner vs End-User) -->
+            <div class="flex items-center gap-2 bg-slate-950/80 p-1 rounded-2xl border border-slate-800">
+                <button onclick="switchView('user')" id="btn-view-user" class="view-btn active flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition text-emerald-400 bg-slate-800">
+                    <i class="fa-solid fa-user-ninja"></i> <span>ব্যবহারকারী ভিউ</span>
+                </button>
+                <button onclick="switchView('admin')" id="btn-view-admin" class="view-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-chart-line text-emerald-400"></i> <span>মালিকের আয় ড্যাশবোর্ড</span>
+                </button>
+                <button onclick="switchView('guide')" id="btn-view-guide" class="view-btn flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-book-bookmark text-indigo-400"></i> <span>অ্যাড সেটআপ গাইড</span>
+                </button>
+            </div>
+
+            <!-- Quick Live Income Ticker -->
+            <div class="hidden sm:flex items-center gap-3">
+                <div class="bg-slate-950/90 px-3.5 py-1.5 rounded-xl border border-slate-800 flex items-center gap-3">
+                    <div class="flex items-center gap-1.5 text-xs font-bold text-slate-300">
+                        <i class="fa-solid fa-eye text-indigo-400"></i>
+                        <span id="headerImpressions">0</span> Ads
+                    </div>
+                    <span class="text-slate-700">|</span>
+                    <div class="flex items-center gap-1 text-xs font-extrabold text-emerald-400">
+                        <i class="fa-solid fa-money-bill-wave text-emerald-500"></i>
+                        $<span id="headerRevenueUsd">0.0000</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- TOP GLOBAL SIMULATED BANNER AD -->
+    <div class="max-w-7xl w-full mx-auto px-4 pt-4">
+        <div class="bg-slate-900 border pulse-ad rounded-2xl p-3 flex flex-col md:flex-row items-center justify-between gap-4 relative overflow-hidden">
+            <span class="absolute top-1 left-2 text-[9px] uppercase font-bold text-slate-500 tracking-wider">AdMob Banner Unit #ca-app-pub-3904</span>
+            <div class="flex items-center gap-3 z-10">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-xl font-bold shadow-md">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <div>
+                    <span class="text-[10px] bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded font-bold uppercase border border-amber-500/30">Sponsored Banner</span>
+                    <h4 class="text-xs md:text-sm font-extrabold text-white">CloudHost Pro - ৯৯% ছাড় স্পেশাল অফার!</h4>
+                    <p class="text-[11px] text-slate-400">মাত্র $১/মাসে হাই-স্পিড ওয়েব হোস্টিং সার্ভার পান।</p>
+                </div>
+            </div>
+            <button onclick="clickBannerAd()" class="z-10 bg-gradient-to-r from-rose-600 to-indigo-600 hover:opacity-90 text-white font-extrabold text-xs px-5 py-2.5 rounded-xl shadow-lg transition flex items-center gap-2">
+                <span>বিজ্ঞাপনে ভিজিট করুন</span> <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN BODY AREA -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 lg:p-6 space-y-6">
+
+        <!-- VIEW 1: END-USER WATCH-TO-EARN PORTAL -->
+        <section id="view-user" class="space-y-6">
+            
+            <!-- Hero User Wallet Card -->
+            <div class="bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative overflow-hidden">
+                <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 relative z-10">
+                    <div class="space-y-2">
+                        <span class="bg-emerald-500/20 text-emerald-400 text-[11px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-500/30">
+                            ব্যবহারকারীর রিওয়ার্ড ওয়ালেট
+                        </span>
+                        <h1 class="text-2xl md:text-3xl font-black text-white">ভিডিও অ্যাড দেখুন এবং রিওয়ার্ড আনলক করুন!</h1>
+                        <p class="text-xs md:text-sm text-slate-300 max-w-xl leading-relaxed">
+                            আপনি প্রতিটি ভিডিও দেখলে আপনার অ্যাকাউন্টে ভার্চুয়াল কয়েন জমা হবে, আর ঠিক একই সময়ে **অ্যাপের মালিকের AdMob অ্যাকাউন্টে রিয়েল ডলার ($0.05 / অ্যাড)** যুক্ত হবে।
+                        </p>
+                    </div>
+
+                    <!-- User Coin Balance -->
+                    <div class="bg-slate-950/90 border border-slate-800 p-4 rounded-2xl flex items-center gap-4 money-glow">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center text-3xl">
+                            <i class="fa-solid fa-coins animate-bounce"></i>
+                        </div>
+                        <div>
+                            <span class="text-xs font-bold text-slate-400 uppercase">ইউজার ব্যালেন্স</span>
+                            <div class="text-2xl font-black text-amber-400"><span id="userCoinBalance">0</span> কয়েন</div>
+                            <span class="text-[10px] text-slate-500">১টি অড = ৫০ কয়েন</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Rewarded Video Ads Action Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                
+                <!-- Action 1: Premium Content Video Unlock -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between hover:border-slate-700 transition">
+                    <div class="space-y-3">
+                        <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20 flex items-center justify-center text-2xl">
+                            <i class="fa-solid fa-play"></i>
+                        </div>
+                        <h3 class="font-bold text-base text-white">প্রিমিয়াম কোর্স ভিডিও আনলক</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            এই কন্টেন্টটি দেখতে ১৫ সেকেন্ডের একটি রেসপন্সরড ভিডিও বিজ্ঞাপন সম্পূর্ণ দেখতে হবে।
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-400">+৫০ কয়েন</span>
+                        <button onclick="triggerRewardedAd('Video Premium Lesson')" class="bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-lg transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-clapperboard"></i> অ্যাড দেখুন (Watch Ad)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Action 2: Daily Bonus Coins -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between hover:border-slate-700 transition">
+                    <div class="space-y-3">
+                        <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center text-2xl">
+                            <i class="fa-solid fa-gift"></i>
+                        </div>
+                        <h3 class="font-bold text-base text-white">ডেইলি স্পিন ও বোনাস কয়েন</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            স্পিন হুইল ঘোরানোর আগে স্পন্সরড ভিডিও টিজার দেখুন ও ডাবল পয়েন্ট অর্জন করুন।
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+                        <span class="text-xs font-bold text-amber-400">+১০০ কয়েন</span>
+                        <button onclick="triggerRewardedAd('Daily Spin Reward')" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-lg transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-spinner"></i> অ্যাড ও স্পিন
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Action 3: Trigger Interstitial Ad -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4 flex flex-col justify-between hover:border-slate-700 transition">
+                    <div class="space-y-3">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center text-2xl">
+                            <i class="fa-solid fa-expand"></i>
+                        </div>
+                        <h3 class="font-bold text-base text-white">ফুল-স্ক্রিন ইন্টারস্টিশিয়াল অ্যাড</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            ট্যাব পরিবর্তন বা পেজ পরিবর্তনের সময় ব্যবহারকারীদের সামনে ফুল-স্ক্রিন পপআপ অ্যাড কীভাবে আসে পরীক্ষা করুন।
+                        </p>
+                    </div>
+                    <div class="pt-3 border-t border-slate-800 flex items-center justify-between">
+                        <span class="text-xs font-bold text-indigo-400">eCPM High</span>
+                        <button onclick="triggerInterstitialAd()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-lg transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-window-maximize"></i> টেস্ট ফুল অ্যাড
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Content Unlocked Showcase Section -->
+            <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+                <h3 class="font-extrabold text-base text-white flex items-center gap-2">
+                    <i class="fa-solid fa-lock-open text-emerald-400"></i> আপনার আনলক করা কন্টেন্ট সমূহ
+                </h3>
+                <div id="unlockedList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center space-y-2 opacity-60">
+                        <i class="fa-solid fa-file-pdf text-3xl text-slate-600"></i>
+                        <p class="text-xs font-bold text-slate-400">সিক্রেট আর্নিং ইবুক PDF (লক করা)</p>
+                        <span class="text-[10px] text-rose-400">অ্যাড দেখলে আনলক হবে</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW 2: APP OWNER REVENUE & ADMIN DASHBOARD -->
+        <section id="view-admin" class="hidden space-y-6">
+            
+            <!-- Revenue Stat Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                
+                <!-- Total USD Earned -->
+                <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-2 relative overflow-hidden">
+                    <div class="flex justify-between items-center text-slate-400 text-xs font-bold">
+                        <span>মোট অর্জিত আয় (Est. Revenue)</span>
+                        <i class="fa-solid fa-dollar-sign text-emerald-400 text-lg"></i>
+                    </div>
+                    <div class="text-3xl font-black text-emerald-400">$<span id="adminRevenueUsd">0.0000</span></div>
+                    <div class="text-xs font-bold text-slate-400">
+                        সমপরিমাণ টাকা: <span class="text-white font-black">৳<span id="adminRevenueBdt">0.00</span> BDT</span>
+                    </div>
+                </div>
+
+                <!-- Total Impressions -->
+                <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-2">
+                    <div class="flex justify-between items-center text-slate-400 text-xs font-bold">
+                        <span>মোট বিজ্ঞাপন ভিউ (Impressions)</span>
+                        <i class="fa-solid fa-eye text-indigo-400 text-lg"></i>
+                    </div>
+                    <div class="text-3xl font-black text-white" id="adminTotalImpressions">0</div>
+                    <div class="text-xs text-slate-400 flex justify-between">
+                        <span>Rewarded: <b class="text-indigo-300" id="adminRewardedViews">0</b></span>
+                        <span>Banner/Pop: <b class="text-indigo-300" id="adminBannerViews">0</b></span>
+                    </div>
+                </div>
+
+                <!-- Estimated eCPM -->
+                <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-2">
+                    <div class="flex justify-between items-center text-slate-400 text-xs font-bold">
+                        <span>গড় eCPM Rate</span>
+                        <i class="fa-solid fa-chart-line text-amber-400 text-lg"></i>
+                    </div>
+                    <div class="text-3xl font-black text-amber-400">$<span id="adminEcpm">12.50</span></div>
+                    <div class="text-[11px] text-slate-500">প্রতি ১,০০০ বিজ্ঞাপন ভিউতে প্রাপ্ত ইনকাম</div>
+                </div>
+
+                <!-- Click Through Rate CTR -->
+                <div class="bg-slate-900/90 border border-slate-800 p-5 rounded-2xl shadow-xl space-y-2">
+                    <div class="flex justify-between items-center text-slate-400 text-xs font-bold">
+                        <span>অ্যাড ক্লিক রেট (CTR)</span>
+                        <i class="fa-solid fa-arrow-pointer text-rose-400 text-lg"></i>
+                    </div>
+                    <div class="text-3xl font-black text-rose-400"><span id="adminCtr">2.4</span>%</div>
+                    <div class="text-[11px] text-slate-500">ক্লিক সংখ্যা: <b id="adminTotalClicks" class="text-white">0</b></div>
+                </div>
+
+            </div>
+
+            <!-- Ad Unit Configurator & AdMob Setup Form -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                
+                <!-- Setup Form -->
+                <div class="lg:col-span-2 bg-slate-900/90 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-5">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                        <div>
+                            <h3 class="font-extrabold text-base text-white flex items-center gap-2">
+                                <i class="fa-solid fa-sliders text-brand-500"></i> AdMob / AdSense অ্যাড আইডি কনফিগারেটর
+                            </h3>
+                            <p class="text-xs text-slate-400">এখানে আপনার আসল বিজ্ঞাপন নেটওয়ার্কের Unit ID বসিয়ে লাইভ করুন</p>
+                        </div>
+                        <span class="bg-emerald-500/20 text-emerald-400 text-[10px] font-extrabold px-2.5 py-1 rounded-full border border-emerald-500/30">AdMob Live connected</span>
+                    </div>
+
+                    <form onsubmit="saveAdConfig(event)" class="space-y-4 text-xs">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="font-bold text-slate-300">Google AdMob App ID</label>
+                                <input type="text" id="cfgAppId" value="ca-app-pub-390472138956~1234567890" class="w-full bg-slate-950 text-slate-200 p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-brand-500">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="font-bold text-slate-300">Rewarded Video Ad Unit ID</label>
+                                <input type="text" id="cfgRewardedId" value="ca-app-pub-390472138956/9876543210" class="w-full bg-slate-950 text-slate-200 p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-brand-500">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="space-y-1.5">
+                                <label class="font-bold text-slate-300">Interstitial Ad Unit ID</label>
+                                <input type="text" id="cfgInterstitialId" value="ca-app-pub-390472138956/5544332211" class="w-full bg-slate-950 text-slate-200 p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-brand-500">
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="font-bold text-slate-300">Banner Ad Unit ID</label>
+                                <input type="text" id="cfgBannerId" value="ca-app-pub-390472138956/1122334455" class="w-full bg-slate-950 text-slate-200 p-3 rounded-xl border border-slate-800 focus:outline-none focus:border-brand-500">
+                            </div>
+                        </div>
+
+                        <div class="pt-3 flex justify-between items-center">
+                            <button type="button" onclick="resetStats()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs px-4 py-2.5 rounded-xl transition">
+                                হিসাব রিসেট করুন
+                            </button>
+                            <button type="submit" class="bg-gradient-to-r from-emerald-600 to-teal-500 hover:opacity-90 text-white font-extrabold text-xs px-6 py-2.5 rounded-xl shadow-lg transition">
+                                কনফিগারেশন সেভ করুন
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Payout Breakdown Card -->
+                <div class="bg-slate-900/90 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
+                    <h3 class="font-extrabold text-base text-white flex items-center gap-2">
+                        <i class="fa-solid fa-building-columns text-emerald-400"></i> ব্যাংক পে-আউট কাউন্টডাউন
+                    </h3>
+                    <p class="text-xs text-slate-400 leading-relaxed">
+                        Google AdMob / AdSense প্রতি মাসের ২১ তারিখ সরাসরি ব্যাংকে বা Wire Transfer এ অর্থ পাঠায়।
+                    </p>
+
+                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-slate-400">সর্বনিম্ন পে-আউট থ্রেশহোল্ড:</span>
+                            <span class="font-bold text-amber-400">$100.00 USD</span>
+                        </div>
+                        <div class="w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                            <div id="payoutProgress" class="bg-emerald-500 h-full w-0 transition-all duration-500"></div>
+                        </div>
+                        <div class="text-[11px] text-slate-500 flex justify-between">
+                            <span>বর্তমান: $<span id="payoutCurrentUsd">0.00</span></span>
+                            <span>বাকি: $<span id="payoutRemainingUsd">100.00</span></span>
+                        </div>
+                    </div>
+
+                    <div class="text-xs space-y-2 text-slate-300 pt-2">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-emerald-500"></i> <span>ব্যাংক পে-আউট মেথড: Wire Transfer (DBBL / City Bank)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-circle-check text-emerald-500"></i> <span>ট্যাক্স ইনফো (W-8BEN): ভেরিফাইড</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- VIEW 3: AD NETWORK DIRECT SETUP BLUEPRINT -->
+        <section id="view-guide" class="hidden space-y-6">
+            
+            <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-6">
+                <div>
+                    <span class="bg-indigo-500/20 text-indigo-400 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border border-indigo-500/30">
+                        Developer Integration Blueprint
+                    </span>
+                    <h2 class="text-xl md:text-2xl font-black text-white mt-2">কীভাবে আপনার নিজের অ্যাপ বা ওয়েবসাইটে আসল বিজ্ঞাপন বসাবেন?</h2>
+                    <p class="text-xs md:text-sm text-slate-400 mt-1">
+                        আপনার অ্যান্ড্রয়েড অ্যাপ বা ওয়েবসাইটে আসল অ্যাড বসিয়ে টাকা আয় শুরু করার জন্য নিচের ৩টি সহজ ধাপ অনুসরণ করুন:
+                    </p>
+                </div>
+
+                <!-- Steps Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <!-- Step 1 -->
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white font-extrabold flex items-center justify-center text-base">
+                            ১
+                        </div>
+                        <h3 class="font-bold text-sm text-white">অ্যাড নেটওয়ার্কে অ্যাকাউন্ট খুলুন</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            ১. <b>Google AdMob</b> (মোবাইল অ্যাপের জন্য) অথবা <b>Google AdSense</b> (ওয়েবসাইটের জন্য) এ রেজিস্ট্রেশন করুন।<br>
+                            ২. আপনার অ্যাপ বা ওয়েবসাইট যুক্ত করে এপ্রুভাল বা সিস্টেম ভেরিফাই করে নিন।
+                        </p>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <div class="w-10 h-10 rounded-xl bg-rose-600 text-white font-extrabold flex items-center justify-center text-base">
+                            ২
+                        </div>
+                        <h3 class="font-bold text-sm text-white">Ad Units (বিজ্ঞাপন ইউনিট) তৈরি</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            AdMob ড্যাশবোর্ড থেকে <b>Rewarded Video Ad Unit</b> এবং <b>Banner Ad Unit</b> কোড তৈরি করুন। প্রতিটি ইউনিটের একটি অনন্য `ca-app-pub-xxx` আইডি থাকবে।
+                        </p>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white font-extrabold flex items-center justify-center text-base">
+                            ৩
+                        </div>
+                        <h3 class="font-bold text-sm text-white">কোডে SDK / Script যুক্ত করা</h3>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            নিচে দেওয়া কোড স্নিপেটটি কপি করে আপনার ওয়েবসাইট বা Android Studio (Java/Kotlin/Flutter) প্রজেক্টে বসিয়ে দিন।
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- Code Snippets Box -->
+                <div class="bg-slate-950 rounded-2xl border border-slate-800 p-5 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-bold text-xs text-slate-300 uppercase tracking-wider flex items-center gap-2">
+                            <i class="fa-solid fa-code text-indigo-400"></i> HTML / React Code Snippet (AdSense Example)
+                        </h4>
+                        <button onclick="copyCodeSnippet()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                            <i class="fa-regular fa-copy"></i> কপি করুন
+                        </button>
+                    </div>
+
+                    <pre id="codeBlock" class="bg-slate-900 p-4 rounded-xl text-emerald-400 font-mono text-xs overflow-x-auto leading-relaxed border border-slate-800 custom-scrollbar"><code>&lt;!-- Google AdSense Script --&gt;
+&lt;script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3904721389561234"
+     crossorigin="anonymous"&gt;&lt;/script&gt;
+
+&lt;!-- Responsive Banner Unit --&gt;
+&lt;ins class="adsbygoogle"
+     style="display:block"
+     data-ad-client="ca-pub-3904721389561234"
+     data-ad-slot="9876543210"
+     data-ad-format="auto"
+     data-full-width-responsive="true"&gt;&lt;/ins&gt;
+&lt;script&gt;
+     (adsbygoogle = window.adsbygoogle || []).push({});
+&lt;/script&gt;</code></pre>
+                </div>
+
+                <!-- Account Safety & Invalid Traffic Warning -->
+                <div class="bg-amber-500/10 border border-amber-500/30 p-5 rounded-2xl space-y-2">
+                    <h4 class="font-extrabold text-sm text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation"></i> অ্যাকাউন্ট ব্যান হওয়া থেকে বাঁচার গুরুত্বপূর্ণ টিপস:
+                    </h4>
+                    <ul class="text-xs text-slate-300 space-y-1.5 list-disc list-inside">
+                        <li><b>কখনোই নিজের বিজ্ঞাপনে নিজে ক্লিক করবেন না:</b> এতে Google AdMob অ্যাকাউন্ট স্থায়ীভাবে ব্যান হয়ে যেতে পারে।</li>
+                        <li><b>ইনভ্যালিড ট্রাফিক (Invalid Traffic) এড়ান:</b> অটোমেটিক কোনো বট বা স্ক্রিপ্ট দিয়ে অ্যাড দেখাবেন না।</li>
+                        <li><b>সঠিক ফ্রিকোয়েন্সি ক্যাপ (Frequency Capping):</b> ব্যবহারকারীকে খুব ঘনঘন পপআপ অ্যাড দেখিয়ে বিরক্ত করবেন না।</li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- REWARDED VIDEO AD PLAYER MODAL (Interactive Simulator) -->
+    <div id="rewardedAdModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-xl shadow-2xl overflow-hidden relative flex flex-col">
+            
+            <!-- Ad Header -->
+            <div class="bg-slate-950 p-3 px-5 border-b border-slate-800 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span class="bg-amber-500 text-slate-950 text-[10px] font-black px-2 py-0.5 rounded uppercase">Sponsored Ad</span>
+                    <span id="adTitleText" class="text-xs font-bold text-slate-300">Video Premium Lesson</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <span id="adCountdown" class="text-xs font-black text-rose-500 bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-500/20">১৫ সেকেন্ড বাকি</span>
+                    <button id="closeAdBtn" disabled onclick="closeRewardedAdModal()" class="text-slate-600 cursor-not-allowed text-sm hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+            </div>
+
+            <!-- Video Player Canvas Area -->
+            <div class="relative bg-black h-80 flex flex-col items-center justify-center text-center p-6 space-y-4 overflow-hidden">
+                
+                <!-- Animated Sponsor Banner simulation -->
+                <div class="absolute inset-0 opacity-20 bg-gradient-to-r from-rose-600 via-indigo-600 to-emerald-600 animate-pulse"></div>
+
+                <div class="relative z-10 space-y-3">
+                    <div class="w-20 h-20 rounded-3xl bg-rose-600/30 text-rose-500 border border-rose-500/40 flex items-center justify-center text-4xl mx-auto shadow-2xl animate-bounce">
+                        <i class="fa-solid fa-gamepad"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-black text-white">SuperGame 3D - প্লে করুন এখনই!</h2>
+                        <p class="text-xs text-slate-400 max-w-xs mx-auto">অ্যাড্রেনালিন পূর্ণ নতুন মোবাইল গেম ইনস্টল করুন এবং বোনাস ৫০,০০০ কয়েন পান।</p>
+                    </div>
+                    <button onclick="clickSponsoredAdFromVideo()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs px-6 py-2.5 rounded-xl shadow-xl transition">
+                        ইনস্টল করুন (Install Now)
+                    </button>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="absolute bottom-0 left-0 right-0 h-2 bg-slate-950">
+                    <div id="adVideoProgressBar" class="bg-rose-500 h-full w-0 transition-all duration-1000"></div>
+                </div>
+            </div>
+
+            <!-- Ad Footer Info -->
+            <div class="bg-slate-950 p-4 border-t border-slate-800 text-center">
+                <p id="adStatusHint" class="text-xs text-slate-400">
+                    পুরস্কার পেতে পুরো ভিডিওটি দেখুন...
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- INTERSTITIAL FULL-SCREEN AD MODAL -->
+    <div id="interstitialAdModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md p-6 shadow-2xl relative text-center space-y-5">
+            <button onclick="closeInterstitialModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg"><i class="fa-solid fa-xmark"></i></button>
+
+            <span class="bg-indigo-500/20 text-indigo-400 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border border-indigo-500/30">
+                Full-Screen Interstitial Ad
+            </span>
+
+            <div class="w-16 h-16 rounded-2xl bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center text-3xl mx-auto">
+                <i class="fa-solid fa-rocket"></i>
+            </div>
+
+            <div class="space-y-1">
+                <h3 class="text-base font-extrabold text-white">FastVPN Unlimited Secure</h3>
+                <p class="text-xs text-slate-400">এক ক্লিকে নিরাপদ ও হাই-স্পিড ভিপিএন কানেক্ট করুন।</p>
+            </div>
+
+            <div class="pt-2">
+                <button onclick="clickInterstitialAd()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs py-3 rounded-xl shadow-lg transition">
+                    ফ্রি ডাউনলোড করুন
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUDIO SOUND EFFECTS (Web Audio API Synthesizer) -->
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playRewardCoinSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(987.77, audioCtx.currentTime); // B5
+            osc.frequency.setValueAtTime(1318.51, audioCtx.currentTime + 0.08); // E6
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        }
+
+        function playCashRegisterSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.frequency.value = freq;
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime + idx * 0.08);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + idx * 0.08 + 0.25);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(audioCtx.currentTime + idx * 0.08);
+                osc.stop(audioCtx.currentTime + idx * 0.08 + 0.25);
+            });
+        }
+    </script>
+
+    <!-- MAIN APP STATE & MONETIZATION LOGIC -->
+    <script>
+        // CORE STATE STORAGE
+        let state = {
+            userCoins: 0,
+            revenueUsd: 0.0000,
+            totalImpressions: 0,
+            rewardedViews: 0,
+            bannerViews: 0,
+            clicks: 0,
+            ecpm: 12.50,
+            unlockedItems: [],
+            configs: {
+                appId: "ca-app-pub-390472138956~1234567890",
+                rewardedId: "ca-app-pub-390472138956/9876543210",
+                interstitialId: "ca-app-pub-390472138956/5544332211",
+                bannerId: "ca-app-pub-390472138956/1122334455"
+            }
+        };
+
+        const BDT_CONVERSION_RATE = 118 flex; // 1 USD = 118 BDT Approx
+
+        window.onload = function() {
+            loadSavedState();
+            updateAllDisplays();
+        };
+
+        function loadSavedState() {
+            const saved = localStorage.getItem('earnpulse_state');
+            if (saved) {
+                try { state = Object.assign(state, JSON.parse(saved)); } catch(e){}
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem('earnpulse_state', JSON.stringify(state));
+            updateAllDisplays();
+        }
+
+        function updateAllDisplays() {
+            // Header Stats
+            document.getElementById('headerImpressions').textContent = state.totalImpressions;
+            document.getElementById('headerRevenueUsd').textContent = state.revenueUsd.toFixed(4);
+
+            // User Balances
+            document.getElementById('userCoinBalance').textContent = state.userCoins.toLocaleString();
+
+            // Admin Dashboard
+            document.getElementById('adminRevenueUsd').textContent = state.revenueUsd.toFixed(4);
+            document.getElementById('adminRevenueBdt').textContent = (state.revenueUsd * BDT_CONVERSION_RATE).toFixed(2);
+            document.getElementById('adminTotalImpressions').textContent = state.totalImpressions;
+            document.getElementById('adminRewardedViews').textContent = state.rewardedViews;
+            document.getElementById('adminBannerViews').textContent = state.bannerViews;
+            document.getElementById('adminTotalClicks').textContent = state.clicks;
+            document.getElementById('adminEcpm').textContent = state.ecpm.toFixed(2);
+
+            // CTR Calculation
+            const ctr = state.totalImpressions > 0 ? ((state.clicks / state.totalImpressions) * 100).toFixed(1) : 0;
+            document.getElementById('adminCtr').textContent = ctr;
+
+            // Payout Progress
+            const payoutPct = Math.min(100, (state.revenueUsd / 100) * 100);
+            document.getElementById('payoutProgress').style.width = payoutPct + '%';
+            document.getElementById('payoutCurrentUsd').textContent = state.revenueUsd.toFixed(2);
+            document.getElementById('payoutRemainingUsd').textContent = Math.max(0, 100 - state.revenueUsd).toFixed(2);
+
+            // Unlocked Items List
+            renderUnlockedList();
+        }
+
+        // VIEW SWITCHING LOGIC
+        function switchView(viewId) {
+            document.querySelectorAll('#view-user, #view-admin, #view-guide').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.classList.remove('active', 'text-emerald-400', 'bg-slate-800');
+                btn.classList.add('text-slate-400');
+            });
+
+            document.getElementById('view-' + viewId).classList.remove('hidden');
+            const activeBtn = document.getElementById('btn-view-' + viewId);
+            if (activeBtn) {
+                activeBtn.classList.add('active', 'text-emerald-400', 'bg-slate-800');
+                activeBtn.classList.remove('text-slate-400');
+            }
+        }
+
+        // REWARDED VIDEO AD SIMULATOR
+        let adInterval = null;
+        let currentAdRewardType = "";
+
+        function triggerRewardedAd(rewardTitle) {
+            currentAdRewardType = rewardTitle;
+            document.getElementById('adTitleText').textContent = rewardTitle;
+            document.getElementById('rewardedAdModal').classList.remove('hidden');
+            document.getElementById('rewardedAdModal').classList.add('flex');
+            
+            let secondsLeft = 15;
+            const progress = document.getElementById('adVideoProgressBar');
+            const countText = document.getElementById('adCountdown');
+            const closeBtn = document.getElementById('closeAdBtn');
+            const hint = document.getElementById('adStatusHint');
+
+            closeBtn.disabled = true;
+            closeBtn.className = "text-slate-600 cursor-not-allowed text-sm";
+            hint.textContent = "পুরস্কার পেতে পুরো ভিডিওটি দেখুন...";
+
+            adInterval = setInterval(() => {
+                secondsLeft--;
+                countText.textContent = secondsLeft + " সেকেন্ড বাকি";
+                progress.style.width = (((15 - secondsLeft) / 15) * 100) + "%";
+
+                if (secondsLeft <= 0) {
+                    clearInterval(adInterval);
+                    countText.textContent = "অ্যাড সম্পন্ন!";
+                    countText.className = "text-xs font-black text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20";
+                    
+                    closeBtn.disabled = false;
+                    closeBtn.className = "text-slate-300 hover:text-white cursor-pointer text-sm font-bold";
+                    hint.innerHTML = "<b class='text-emerald-400'>অভিনন্দন!</b> ভিডিও সমাপ্ত। আপনি ৫০ কয়েন পেয়েছেন এবং অ্যাপ ওনার $0.05 ইনকাম করেছেন!";
+
+                    // Grant Rewards
+                    grantAdRewards();
+                }
+            }, 1000);
+        }
+
+        function grantAdRewards() {
+            state.userCoins += 50;
+            state.revenueUsd += 0.0500; // $0.05 per rewarded ad view
+            state.totalImpressions++;
+            state.rewardedViews++;
+            
+            if (!state.unlockedItems.includes(currentAdRewardType)) {
+                state.unlockedItems.push(currentAdRewardType);
+            }
+
+            playCashRegisterSound();
+            confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+            saveState();
+        }
+
+        function closeRewardedAdModal() {
+            clearInterval(adInterval);
+            document.getElementById('rewardedAdModal').classList.add('hidden');
+            document.getElementById('rewardedAdModal').classList.remove('flex');
+        }
+
+        // INTERSTITIAL AD SIMULATOR
+        function triggerInterstitialAd() {
+            document.getElementById('interstitialAdModal').classList.remove('hidden');
+            document.getElementById('interstitialAdModal').classList.add('flex');
+            state.totalImpressions++;
+            state.bannerViews++;
+            state.revenueUsd += 0.0150; // $0.015 per interstitial view
+            saveState();
+        }
+
+        function closeInterstitialModal() {
+            document.getElementById('interstitialAdModal').classList.add('hidden');
+            document.getElementById('interstitialAdModal').classList.remove('flex');
+        }
+
+        // BANNER & AD CLICK TRACKERS
+        function clickBannerAd() {
+            state.clicks++;
+            state.revenueUsd += 0.1200; // $0.12 per ad click
+            playRewardCoinSound();
+            alert("আপনি ব্যানারে ক্লিক করেছেন! অ্যাপ ওনারের অ্যাকাউন্টে $0.12 এড ক্লিক ইনকাম যুক্ত হয়েছে।");
+            saveState();
+        }
+
+        function clickSponsoredAdFromVideo() {
+            state.clicks++;
+            state.revenueUsd += 0.2500; // High value installation ad click
+            playRewardCoinSound();
+            alert("স্পন্সরড অ্যাপ ইনস্টল ক্লিকে অ্যাপ ওনার অতিরিক্ত $0.25 ইনকাম করেছেন!");
+            saveState();
+        }
+
+        function clickInterstitialAd() {
+            state.clicks++;
+            state.revenueUsd += 0.1800;
+            playRewardCoinSound();
+            alert("ফুল-স্ক্রিন ক্লিকে অ্যাপ ওনার $0.18 ইনকাম করেছেন!");
+            closeInterstitialModal();
+            saveState();
+        }
+
+        // RENDER UNLOCKED CONTENT
+        function renderUnlockedList() {
+            const container = document.getElementById('unlockedList');
+            if (state.unlockedItems.length === 0) {
+                container.innerHTML = `
+                    <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center space-y-2 opacity-60">
+                        <i class="fa-solid fa-lock text-2xl text-slate-600"></i>
+                        <p class="text-xs font-bold text-slate-400">এখনো কোনো কন্টেন্ট আনলক হয়নি</p>
+                        <span class="text-[10px] text-slate-500">ভিডিও অ্যাড দেখলে আনলক কন্টেন্ট এখানে দেখাবে</span>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = '';
+            state.unlockedItems.forEach(item => {
+                container.innerHTML += `
+                    <div class="p-4 rounded-xl bg-slate-950 border border-emerald-500/30 text-center space-y-2">
+                        <i class="fa-solid fa-circle-check text-2xl text-emerald-400"></i>
+                        <p class="text-xs font-bold text-slate-200">${item}</p>
+                        <span class="text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded font-bold">আনলকড (Unlocked)</span>
+                    </div>
+                `;
+            });
+        }
+
+        // ADMIN FORM & RESET
+        function saveAdConfig(e) {
+            e.preventDefault();
+            state.configs.appId = document.getElementById('cfgAppId').value;
+            state.configs.rewardedId = document.getElementById('cfgRewardedId').value;
+            state.configs.interstitialId = document.getElementById('cfgInterstitialId').value;
+            state.configs.bannerId = document.getElementById('cfgBannerId').value;
+            saveState();
+            alert('অ্যাড কনফিগারেটর ডেটা সফলভাবে সেভ হয়েছে!');
+        }
+
+        function resetStats() {
+            if (confirm('আপনি কি নিশ্চিত যে সকল হিসাব এবং আয় রিসেট করতে চান?')) {
+                state.userCoins = 0;
+                state.revenueUsd = 0;
+                state.totalImpressions = 0;
+                state.rewardedViews = 0;
+                state.bannerViews = 0;
+                state.clicks = 0;
+                state.unlockedItems = [];
+                saveState();
+            }
+        }
+
+        function copyCodeSnippet() {
+            const codeText = document.getElementById('codeBlock').innerText;
+            navigator.clipboard.writeText(codeText);
+            alert('কোড স্নিপেট ক্লিপবোর্ডে কপি হয়েছে!');
+        }
+    </script>
+</body>
+</html>
